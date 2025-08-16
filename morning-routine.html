@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning Routine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            color: #333;
+            padding: 40px 20px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .timer {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .time-display {
+            font-size: 48px;
+            font-weight: 300;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .time-label {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .urgent .time-display {
+            color: #ff3333;
+        }
+
+        .warning .time-display {
+            color: #ff9500;
+        }
+
+        .task {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+
+        .task:hover {
+            background: #f8f8f8;
+            margin: 0 -20px;
+            padding: 16px 20px;
+            transform: translateX(8px);
+            border-radius: 8px;
+        }
+
+        .task.done {
+            opacity: 0.4;
+            transform: scale(0.98);
+        }
+
+        .task.done .task-text {
+            text-decoration: line-through;
+        }
+
+        .task.done .emoji {
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            margin-right: 16px;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .task.done .checkbox {
+            background: #333;
+            border-color: #333;
+            transform: scale(1.1);
+            animation: checkPulse 0.4s ease;
+        }
+
+        .task.done .checkbox::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            animation: checkAppear 0.3s ease 0.1s both;
+        }
+
+        @keyframes checkPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1.1); }
+        }
+
+        @keyframes checkAppear {
+            0% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            100% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task {
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .task:nth-child(1) { animation-delay: 0.1s; }
+        .task:nth-child(2) { animation-delay: 0.15s; }
+        .task:nth-child(3) { animation-delay: 0.2s; }
+        .task:nth-child(4) { animation-delay: 0.25s; }
+        .task:nth-child(5) { animation-delay: 0.3s; }
+        .task:nth-child(6) { animation-delay: 0.35s; }
+        .task:nth-child(7) { animation-delay: 0.4s; }
+        .task:nth-child(8) { animation-delay: 0.45s; }
+        .task:nth-child(9) { animation-delay: 0.5s; }
+        .task:nth-child(10) { animation-delay: 0.55s; }
+        .task:nth-child(11) { animation-delay: 0.6s; }
+        .task:nth-child(12) { animation-delay: 0.65s; }
+        .task:nth-child(13) { animation-delay: 0.7s; }
+        .task:nth-child(14) { animation-delay: 0.75s; }
+        .task:nth-child(15) { animation-delay: 0.8s; }
+
+        .emoji {
+            font-size: 18px;
+            margin-right: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .task:hover .emoji {
+            transform: scale(1.2);
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-text {
+            font-size: 16px;
+            margin-bottom: 2px;
+            transition: transform 0.2s ease;
+        }
+
+        .task:hover .task-text {
+            transform: translateX(4px);
+        }
+
+        .task-time {
+            font-size: 12px;
+            color: #999;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .task:hover .task-time {
+            color: #666;
+        }
+
+        .reset {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .reset-btn {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+
+        .reset-btn:hover {
+            border-color: #333;
+            color: #333;
+        }
+
+        .progress {
+            width: 100%;
+            height: 2px;
+            background: #eee;
+            margin-bottom: 40px;
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #333;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        @media (max-width: 480px) {
+            .time-display {
+                font-size: 36px;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti-1 { background: #ff6b6b; border-radius: 50%; }
+        .confetti-2 { background: #4ecdc4; }
+        .confetti-3 { background: #45b7d1; border-radius: 50%; }
+        .confetti-4 { background: #96ceb4; }
+        .confetti-5 { background: #feca57; border-radius: 50%; }
+        .confetti-6 { background: #ff9ff3; }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotateZ(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotateZ(360deg);
+                opacity: 0;
+            }
+        }
+
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1001;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            opacity: 0;
+            animation: celebrationPop 0.5s ease forwards;
+        }
+
+        .celebration h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .celebration p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        @keyframes celebrationPop {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="timer" id="timer">
+            <div class="time-display" id="timeDisplay">00:00:00</div>
+            <div class="time-label">avant le bus</div>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="tasks">
+            <div class="task" data-time="05:45">
+                <div class="checkbox"></div>
+                <div class="emoji">🛏️</div>
+                <div class="task-content">
+                    <div class="task-text">Se lever</div>
+                    <div class="task-time">5h45</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="05:45">
+                <div class="checkbox"></div>
+                <div class="emoji">💧</div>
+                <div class="task-content">
+                    <div class="task-text">Boire de l'eau</div>
+                    <div class="task-time">5h45</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="05:50">
+                <div class="checkbox"></div>
+                <div class="emoji">🚿</div>
+                <div class="task-content">
+                    <div class="task-text">Douche rapide</div>
+                    <div class="task-time">5h50</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="05:57">
+                <div class="checkbox"></div>
+                <div class="emoji">🦷</div>
+                <div class="task-content">
+                    <div class="task-text">Dents</div>
+                    <div class="task-time">5h57</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="06:00">
+                <div class="checkbox"></div>
+                <div class="emoji">👔</div>
+                <div class="task-content">
+                    <div class="task-text">S'habiller</div>
+                    <div class="task-time">6h00</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="06:10">
+                <div class="checkbox"></div>
+                <div class="emoji">🎒</div>
+                <div class="task-content">
+                    <div class="task-text">Vérifier sac</div>
+                    <div class="task-time">6h10</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="06:15">
+                <div class="checkbox"></div>
+                <div class="emoji">🥐</div>
+                <div class="task-content">
+                    <div class="task-text">Petit-déjeuner</div>
+                    <div class="task-time">6h15</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="06:35">
+                <div class="checkbox"></div>
+                <div class="emoji">🌤️</div>
+                <div class="task-content">
+                    <div class="task-text">Vérifier météo</div>
+                    <div class="task-time">6h35</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="06:40">
+                <div class="checkbox"></div>
+                <div class="emoji">🍪</div>
+                <div class="task-content">
+                    <div class="task-text">Collation</div>
+                    <div class="task-time">6h40</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="06:45">
+                <div class="checkbox"></div>
+                <div class="emoji">🔍</div>
+                <div class="task-content">
+                    <div class="task-text">Vérification finale</div>
+                    <div class="task-time">6h45</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="06:50">
+                <div class="checkbox"></div>
+                <div class="emoji">🚪</div>
+                <div class="task-content">
+                    <div class="task-text">Sortir</div>
+                    <div class="task-time">6h50</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="06:57">
+                <div class="checkbox"></div>
+                <div class="emoji">🚌</div>
+                <div class="task-content">
+                    <div class="task-text">Bus</div>
+                    <div class="task-time">6h57</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="07:05">
+                <div class="checkbox"></div>
+                <div class="emoji">✈️</div>
+                <div class="task-content">
+                    <div class="task-text">Gare aéroport</div>
+                    <div class="task-time">7h05</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="07:25">
+                <div class="checkbox"></div>
+                <div class="emoji">🚂</div>
+                <div class="task-content">
+                    <div class="task-text">Train</div>
+                    <div class="task-time">7h25</div>
+                </div>
+            </div>
+
+            <div class="task" data-time="08:07">
+                <div class="checkbox"></div>
+                <div class="emoji">🏫</div>
+                <div class="task-content">
+                    <div class="task-text">Renens</div>
+                    <div class="task-time">8h07</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="reset">
+            <button class="reset-btn" onclick="resetAll()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        function updateTimer() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentSecond = now.getSeconds();
+            const currentTime = currentHour * 60 + currentMinute;
+            
+            const busTime = 6 * 60 + 57;
+            const timer = document.getElementById('timer');
+            const timeDisplay = document.getElementById('timeDisplay');
+            
+            if (currentTime < busTime) {
+                const remainingMinutes = busTime - currentTime;
+                const remainingSeconds = 60 - currentSecond;
+                
+                const hours = Math.floor((remainingMinutes - 1) / 60);
+                const minutes = (remainingMinutes - 1) % 60;
+                const seconds = remainingSeconds === 60 ? 0 : remainingSeconds;
+                
+                const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                timeDisplay.textContent = timeStr;
+                
+                timer.className = 'timer';
+                if (remainingMinutes <= 5) {
+                    timer.className = 'timer urgent';
+                } else if (remainingMinutes <= 15) {
+                    timer.className = 'timer warning';
+                }
+            } else {
+                const nextDayBusTime = busTime + 24 * 60;
+                const remainingMinutes = nextDayBusTime - currentTime;
+                const remainingSeconds = 60 - currentSecond;
+                
+                const hours = Math.floor((remainingMinutes - 1) / 60);
+                const minutes = (remainingMinutes - 1) % 60;
+                const seconds = remainingSeconds === 60 ? 0 : remainingSeconds;
+                
+                const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                timeDisplay.textContent = timeStr;
+                timer.className = 'timer';
+            }
+        }
+
+        function updateProgress() {
+            const tasks = document.querySelectorAll('.task');
+            const completed = document.querySelectorAll('.task.done');
+            const progress = (completed.length / tasks.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Check if all tasks are completed
+            if (completed.length === tasks.length && tasks.length > 0) {
+                triggerCelebration();
+            }
+        }
+
+        function triggerCelebration() {
+            // Create celebration popup
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            celebration.innerHTML = `
+                <h2>🎉 Bravo !</h2>
+                <p>Tu as terminé ta morning routine !<br>Bon voyage vers Renens !</p>
+            `;
+            document.body.appendChild(celebration);
+
+            // Remove popup after 4 seconds
+            setTimeout(() => {
+                celebration.remove();
+            }, 4000);
+
+            // Create confetti and play celebration sound
+            createConfetti();
+            playCelebrationSound();
+        }
+
+        function createConfetti() {
+            const colors = ['confetti-1', 'confetti-2', 'confetti-3', 'confetti-4', 'confetti-5', 'confetti-6'];
+            
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = `confetti ${colors[Math.floor(Math.random() * colors.length)]}`;
+                    
+                    // Random position at the top
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    confetti.style.animation = 'confetti-fall linear forwards';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    // Remove confetti after animation
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 5000);
+                }, i * 50);
+            }
+        }
+
+        function resetAll() {
+            document.querySelectorAll('.task').forEach(task => {
+                task.classList.remove('done');
+            });
+            updateProgress();
+            
+            // Remove any existing celebration popup
+            const existingCelebration = document.querySelector('.celebration');
+            if (existingCelebration) {
+                existingCelebration.remove();
+            }
+        }
+
+        document.querySelectorAll('.task').forEach(task => {
+            task.addEventListener('click', () => {
+                task.classList.toggle('done');
+                playClickSound(task.classList.contains('done'));
+                updateProgress();
+            });
+        });
+
+        function playClickSound(isCompleted) {
+            // Create audio context if it doesn't exist
+            if (typeof window.audioContext === 'undefined') {
+                window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const audioContext = window.audioContext;
+            
+            if (isCompleted) {
+                // Success sound: pleasant upward tone
+                playTone(audioContext, 800, 0.1, 'sine');
+                setTimeout(() => playTone(audioContext, 1000, 0.1, 'sine'), 100);
+            } else {
+                // Uncheck sound: soft downward tone
+                playTone(audioContext, 400, 0.1, 'sine');
+            }
+        }
+
+        function playTone(audioContext, frequency, duration, type = 'sine') {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playCelebrationSound() {
+            if (typeof window.audioContext === 'undefined') {
+                window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const audioContext = window.audioContext;
+            
+            // Play a celebratory sequence
+            const notes = [523, 659, 784, 1047]; // C, E, G, C octave
+            notes.forEach((note, index) => {
+                setTimeout(() => {
+                    playTone(audioContext, note, 0.3, 'sine');
+                }, index * 150);
+            });
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+        updateProgress();
+    </script>
+</body>
+</html>
