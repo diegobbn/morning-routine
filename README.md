@@ -14,7 +14,7 @@ Une application web minimaliste pour gérer sa routine matinale avec style et ef
 
 ## 🚀 Démo
 
-[Voir la démo live](https://[ton-username].github.io/morning-routine)
+[Voir la démo live](https://diegobbn.github.io/morning-routine)
 
 ## 📱 Installation Mobile
 
